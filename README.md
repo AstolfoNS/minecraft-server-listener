@@ -137,14 +137,12 @@ server:
   port: 8081
   servlet:
     context-path: /api/minecraft
-
 security:
   hmac-secret: ${HMAC_SECRET}
   max-skew-seconds: 60
   header-ts: X-TS
   header-nonce: X-NONCE
   header-sign: X-SIGN
-
 minecraft:
   work-dir: /www/minecraft/VanillaEra:CulinaryJourney2.5.1–Server
   run-script: ./run.sh
