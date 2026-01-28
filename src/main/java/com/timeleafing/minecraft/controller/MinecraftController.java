@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/minecraft")
+@RequestMapping
 @RequiredArgsConstructor
 public class MinecraftController {
 

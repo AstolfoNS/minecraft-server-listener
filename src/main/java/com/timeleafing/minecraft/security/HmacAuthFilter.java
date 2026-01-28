@@ -20,7 +20,6 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Order(2)
 @Component
 @RequiredArgsConstructor
 public class HmacAuthFilter extends OncePerRequestFilter {
@@ -32,7 +31,8 @@ public class HmacAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/minecraft/");
+        // 保护 context-path 下的所有 HTTP 接口
+        return !request.getRequestURI().startsWith(request.getContextPath() + "/");
     }
 
     @Override
