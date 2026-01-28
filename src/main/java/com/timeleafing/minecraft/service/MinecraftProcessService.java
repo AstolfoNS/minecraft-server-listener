@@ -1,9 +1,10 @@
 package com.timeleafing.minecraft.service;
 
+import com.timeleafing.minecraft.config.property.MinecraftProperty;
 import com.timeleafing.minecraft.websocket.LogWebSocket;
 import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -14,14 +15,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MinecraftProcessService {
 
-    @Value("#{minecraftProperty.workDir}")
-    private String workDir;
-
-    @Value("#{minecraftProperty.runScript}")
-    private String runScript;
-
+    private final MinecraftProperty props;
     // 当进程较慢停止时等待的最长时间
     private static final Duration STOP_WAIT_TIMEOUT = Duration.ofSeconds(30);
 
@@ -46,13 +43,10 @@ public class MinecraftProcessService {
             log.warn("Minecraft server already running");
             return;
         }
+        log.info("Starting Minecraft server (workDir={}, script={})", props.getWorkDir(), props.getRunScript());
 
-        log.info("Starting Minecraft server (workDir={}, script={})", workDir, runScript);
-
-        ProcessBuilder builder = new ProcessBuilder("bash", "-c", runScript);
-        if (workDir != null && !workDir.isBlank()) {
-            builder.directory(new File(workDir));
-        }
+        ProcessBuilder builder = new ProcessBuilder("bash", "-c", props.getRunScript());
+        builder.directory(new File(props.getWorkDir()));
         // 合并 stdout/stderr
         builder.redirectErrorStream(true);
 

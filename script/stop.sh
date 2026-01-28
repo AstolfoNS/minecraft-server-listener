@@ -17,10 +17,11 @@ if [[ -z "${PID}" ]]; then
 fi
 
 if kill -0 "${PID}" 2>/dev/null; then
-  echo "Stopping listener (pid=${PID})..."
+  echo "Stopping minecraft-listener (pid=${PID})..."
   kill "${PID}"
 
-  # 等待最多 20 秒优雅退出
+  # 最多等待 20 秒优雅退出
+  # shellcheck disable=SC2034
   for i in {1..20}; do
     if kill -0 "${PID}" 2>/dev/null; then
       sleep 1
@@ -29,7 +30,6 @@ if kill -0 "${PID}" 2>/dev/null; then
     fi
   done
 
-  # 还没退出就强杀
   if kill -0 "${PID}" 2>/dev/null; then
     echo "Still running, killing forcibly..."
     kill -9 "${PID}" || true

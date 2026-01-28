@@ -1,16 +1,28 @@
 package com.timeleafing.minecraft.config.property;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 @Data
+@Validated
 @ConfigurationProperties(prefix = "security")
-@Component
 public class SecurityProperty {
+    @NotBlank
+    private String hmacSecret;
 
-    private String apiKey;
+    @NotNull
+    private Long maxSkewSeconds = 60L;
 
-    private String headerName;
+    @NotBlank
+    private String headerTs = "X-TS";
+
+    @NotBlank
+    private String headerNonce = "X-NONCE";
+
+    @NotBlank
+    private String headerSign = "X-SIGN";
 
 }
