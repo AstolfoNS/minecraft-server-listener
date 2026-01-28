@@ -3,10 +3,12 @@ set -euo pipefail
 
 BASE_DIR="/www/listener"
 SERVER_DIR="${BASE_DIR}/server"
-CONFIG_FILE="${SERVER_DIR}/config/application.yaml"
+CONFIG_DIR="${SERVER_DIR}/config"
+CONFIG_FILE="${CONFIG_DIR}/application.yaml"
 JAR_FILE="${SERVER_DIR}/minecraft-0.0.1-SNAPSHOT.jar"
 LOG_DIR="${BASE_DIR}/logs"
 PID_FILE="${BASE_DIR}/listener.pid"
+SECRET_FILE="${BASE_DIR}/secret/hmac_secret"
 
 mkdir -p "${LOG_DIR}"
 
@@ -19,6 +21,18 @@ if [[ ! -f "${CONFIG_FILE}" ]]; then
   echo "ERROR: Config not found: ${CONFIG_FILE}"
   exit 1
 fi
+
+if [[ ! -f "${SECRET_FILE}" ]]; then
+  echo "ERROR: Secret file not found: ${SECRET_FILE}"
+  exit 1
+fi
+
+HMAC_SECRET="$(tr -d '\r\n' < "${SECRET_FILE}")"
+if [[ -z "${HMAC_SECRET}" ]]; then
+  echo "ERROR: Secret file is empty: ${SECRET_FILE}"
+  exit 1
+fi
+export HMAC_SECRET
 
 # 已有进程在跑，直接退出
 if [[ -f "${PID_FILE}" ]]; then
@@ -37,15 +51,16 @@ TS="$(date +'%F_%H-%M-%S')"
 LOG_FILE="${LOG_DIR}/listener_${TS}.log"
 
 echo "Starting minecraft-listener..."
-echo "  Jar:    ${JAR_FILE}"
-echo "  Config: ${CONFIG_FILE}"
-echo "  Log:    ${LOG_FILE}"
+echo "  Jar:        ${JAR_FILE}"
+echo "  Config dir: ${CONFIG_DIR}"
+echo "  Secret:     ${SECRET_FILE}"
+echo "  Log:        ${LOG_FILE}"
 
-# 如果你使用环境变量方式注入密钥（推荐）
-# export SECURITY_API_KEY="change-me-to-a-long-random-string"
+JAVA_BIN="${JAVA_BIN:-java}"
+JAVA_OPTS="${JAVA_OPTS:--Xms128m -Xmx512m -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Shanghai}"
 
-nohup java -jar "${JAR_FILE}" \
-  --spring.config.location="file:${CONFIG_FILE}" \
+nohup "${JAVA_BIN}" "${JAVA_OPTS}" -jar "${JAR_FILE}" \
+  --spring.config.additional-location="file:${CONFIG_DIR}/" \
   > "${LOG_FILE}" 2>&1 &
 
 NEW_PID=$!
