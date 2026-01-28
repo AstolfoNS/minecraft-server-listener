@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -29,8 +28,19 @@ public class HmacAuthFilter extends OncePerRequestFilter {
     private final Map<String, Long> nonceCache = new ConcurrentHashMap<>();
 
 
+    private static boolean isWebSocketHandshake(HttpServletRequest req) {
+        String upgrade = req.getHeader("Upgrade");
+        if (upgrade == null || !upgrade.equalsIgnoreCase("websocket")) return false;
+
+        String conn = req.getHeader("Connection");
+        return conn != null && conn.toLowerCase().contains("upgrade");
+    }
+
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        if (isWebSocketHandshake(request)) {
+            return true;
+        }
         // 保护 context-path 下的所有 HTTP 接口
         return !request.getRequestURI().startsWith(request.getContextPath() + "/");
     }
