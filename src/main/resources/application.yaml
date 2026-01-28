@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: minecraft
+server:
+  port: 8081
+security:
+  api-key: "1234567890987654321"
+  header-name: "X-API-KEY"
+minecraft:
+  work-dir: /www/minecraft/VanillaEra:CulinaryJourney2.5.1–Server
+  run-script: ./run.sh
