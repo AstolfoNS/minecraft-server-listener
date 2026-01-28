@@ -59,7 +59,7 @@ echo "  Log:        ${LOG_FILE}"
 JAVA_BIN="${JAVA_BIN:-java}"
 JAVA_OPTS="${JAVA_OPTS:--Xms128m -Xmx512m -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Shanghai}"
 
-nohup "${JAVA_BIN}" "${JAVA_OPTS}" -jar "${JAR_FILE}" \
+nohup "${JAVA_BIN}" ${JAVA_OPTS} -jar "${JAR_FILE}" \
   --spring.config.additional-location="file:${CONFIG_DIR}/" \
   > "${LOG_FILE}" 2>&1 &
 
