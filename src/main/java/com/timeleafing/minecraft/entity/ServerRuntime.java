@@ -1,6 +1,5 @@
 package com.timeleafing.minecraft.entity;
 
-import com.timeleafing.minecraft.common.enumeration.ServerStatus;
 import lombok.Data;
 
 import java.io.BufferedWriter;
