@@ -7,7 +7,7 @@
 
 ## 项目简介
 
-`minecraft-listener` 是一个运行在服务器上的 Spring Boot 服务，核心能力包括：
+`minecraft-server-listener` 是一个运行在服务器上的 Spring Boot 服务，核心能力包括：
 
 - 启动 / 停止 Minecraft Server
 - 向 Minecraft 控制台发送命令
