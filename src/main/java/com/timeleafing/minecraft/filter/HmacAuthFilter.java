@@ -33,7 +33,7 @@ public class HmacAuthFilter extends OncePerRequestFilter {
      * 判断是否是 WebSocket 握手请求
      */
     private static boolean isWebSocketHandshake(HttpServletRequest req) {
-        return "websocket".equalsIgnoreCase(req.getHeader("Upgrade")) && req.getHeader("Connection").contains("upgrade");
+        return "websocket".equalsIgnoreCase(req.getHeader("Upgrade")) && req.getHeader("Connection").toLowerCase(java.util.Locale.ROOT).contains("upgrade");
     }
 
     @Override

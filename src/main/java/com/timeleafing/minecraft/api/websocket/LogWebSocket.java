@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.Closeable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -180,5 +181,11 @@ public class LogWebSocket implements Closeable {
         sessionsByServer.clear();
 
         log.info("LogWebSocket shutdown complete.");
+    }
+
+    public static Map<String, Integer> snapshotOnline() {
+        Map<String, Integer> m = new HashMap<>();
+        sessionsByServer.forEach((sid, set) -> m.put(sid, set.size()));
+        return m;
     }
 }
