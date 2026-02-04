@@ -18,7 +18,7 @@ public class R<T> implements Serializable {
 
     private int code;
 
-    private String message;
+    private String msg;
 
     private T data;
 
@@ -35,16 +35,16 @@ public class R<T> implements Serializable {
         return new R<>(HttpCode.OK.getCode(), HttpCode.OK.getMessage(), data, null);
     }
 
-    public static <T> R<T> ok(String message, T data) {
-        return new R<>(HttpCode.OK.getCode(), message, data, null);
+    public static <T> R<T> ok(String msg, T data) {
+        return new R<>(HttpCode.OK.getCode(), msg, data, null);
     }
 
     public static <T> R<T> ok(HttpCode httpCode, T data) {
         return new R<>(httpCode.getCode(), httpCode.getMessage(), data, null);
     }
 
-    public static <T> R<T> okWithMsg(String message) {
-        return ok(message, null);
+    public static <T> R<T> okWithMsg(String msg) {
+        return ok(msg, null);
     }
 
     // ==========================
@@ -58,8 +58,8 @@ public class R<T> implements Serializable {
         return failed(HttpCode.FAILED, data);
     }
 
-    public static <T> R<T> failed(String message) {
-        return failed(HttpCode.FAILED.getCode(), message, null);
+    public static <T> R<T> failed(String msg) {
+        return failed(HttpCode.FAILED.getCode(), msg, null);
     }
 
     public static <T> R<T> failed(HttpCode httpCode) {
@@ -70,8 +70,8 @@ public class R<T> implements Serializable {
         return new R<>(httpCode.getCode(), httpCode.getMessage(), data, null);
     }
 
-    public static <T> R<T> failed(int code, String message, T data) {
-        return new R<>(code, message, data, null);
+    public static <T> R<T> failed(int code, String msg, T data) {
+        return new R<>(code, msg, data, null);
     }
 
     // ==========================
@@ -81,7 +81,7 @@ public class R<T> implements Serializable {
         return new R<>(httpCode.getCode(), httpCode.getMessage(), null, details);
     }
 
-    public static <T> R<T> failedWithDetails(String message, Object details) {
-        return new R<>(HttpCode.FAILED.getCode(), message, null, details);
+    public static <T> R<T> failedWithDetails(String msg, Object details) {
+        return new R<>(HttpCode.FAILED.getCode(), msg, null, details);
     }
 }
