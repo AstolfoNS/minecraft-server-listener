@@ -96,11 +96,13 @@ METHOD \n PATH \n TIMESTAMP \n NONCE
 
 ```dir
 com.timeleafing.minecraft
-├── controller        # HTTP API
-├── service           # MC 进程控制
-├── security          # HMAC Filter
-├── websocket         # 日志 WS 推送
-├── config            # WebSocket / Spring 配置
+├── api
+│   ├── controller          # HTTP API
+│   └── websocket           # 日志 WS 推送
+├── config                  # WebSocket / Spring 配置
+├── filter                  # HMAC Filter
+├── handler                 # 全局异常处理
+├── service                 # MC 进程控制
 └── MinecraftApplication.java
 ```
 
