@@ -22,19 +22,19 @@ public class MinecraftController {
 
 
     @PostMapping("/{serverId}/cmd")
-    public R<Void> cmd(@PathVariable String serverId, @RequestBody CmdReq req) throws IOException {
+    public R<Void> sendCmd(@PathVariable String serverId, @RequestBody CmdReq req) throws IOException {
         service.sendCmd(serverId, req.cmd());
         return R.ok();
     }
 
     @PostMapping("/{serverId}/start")
-    public R<Void> start(@PathVariable String serverId) throws IOException {
+    public R<Void> startServer(@PathVariable String serverId) throws IOException {
         service.startServer(serverId);
         return R.ok();
     }
 
     @PostMapping("/{serverId}/stop")
-    public R<Void> stop(@PathVariable String serverId) {
+    public R<Void> stopServer(@PathVariable String serverId) {
         service.stopServer(serverId);
         return R.ok();
     }
