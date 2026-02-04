@@ -1,4 +1,4 @@
-# Minecraft Listener Service
+Minecraft Server Listener
 
 > 一个用于 **远程安全控制 Minecraft 服务进程** 的 Spring Boot 服务
 > 支持 **HTTP API（HMAC 鉴权）** + **WebSocket 实时日志推送**
