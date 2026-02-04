@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_DIR="/www/listener"
+BASE_DIR="/www/minecraft/listener"
+
 PID_FILE="${BASE_DIR}/listener.pid"
 
 # 确保 PID 文件存在

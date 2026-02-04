@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_DIR="/www/listener"
+BASE_DIR="/www/minecraft/listener"
+
 SERVER_DIR="${BASE_DIR}/server"
 CONFIG_DIR="${SERVER_DIR}/config"
 CONFIG_FILE="${CONFIG_DIR}/application.yaml"

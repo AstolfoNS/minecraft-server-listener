@@ -14,5 +14,5 @@ security:
 minecraft:
   servers:
     - id: vanilla
-      work-dir: /www/minecraft/VanillaEra
+      work-dir: /www/minecraft/servers/VanillaEra
       run-script: ./run.sh
