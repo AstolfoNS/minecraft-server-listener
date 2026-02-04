@@ -108,7 +108,7 @@ com.timeleafing.minecraft
 
 ---
 
-## 服务器部署结构
+## 服务器部署结构示例
 
 ```dir
 /www/
