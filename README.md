@@ -112,21 +112,23 @@ com.timeleafing.minecraft
 
 ```dir
 /www/
-├── minecraft/
-│   └── /xxx    # minecraft 服务端
-└── listener/
-    ├── logs/
-    │   └── listener_2026-01-28_10-22-17.log
-    ├── script/
-    │   ├── start.sh
-    │   └── stop.sh
-    ├── secret/
-    │   └── hmac_secret
-    ├── server/
-    │   ├── config/
-    │   │   └── application.yaml
-    │   └── minecraft-0.0.1-SNAPSHOT.jar
-    └── listener.pid
+└── minecraft/
+    ├── servers/
+    │   ├── /xxx1    # minecraft 服务端1
+    │   └── /xxx2    # minecraft 服务端2
+    └── listener/
+        ├── logs/
+        │   └── listener_2026-01-28_10-22-17.log
+        ├── script/
+        │   ├── start.sh
+        │   └── stop.sh
+        ├── secret/
+        │   └── hmac_secret
+        ├── server/
+        │   ├── config/
+        │   │   └── application.yaml
+        │   └── minecraft-0.0.1-SNAPSHOT.jar
+        └── listener.pid
 ```
 
 ---
@@ -148,8 +150,10 @@ security:
   header-nonce: X-NONCE
   header-sign: X-SIGN
 minecraft:
-  work-dir: /www/minecraft/VanillaEra
-  run-script: ./run.sh
+  servers:
+    - id: vanilla
+      work-dir: /www/minecraft/servers/VanillaEra
+      run-script: ./run.sh
 ```
 
 ---
@@ -159,7 +163,7 @@ minecraft:
 ### 密钥文件
 
 ```dir
-/www/listener/secret/hmac_secret
+{BASE_DIR}/secret/hmac_secret
 ```
 
 内容示例（一行）：
@@ -171,7 +175,7 @@ a-very-long-random-secret-string
 ### 权限建议
 
 ```bash
-chmod 600 /www/listener/secret/hmac_secret
+chmod 600 {BASE_DIR}/secret/hmac_secret
 ```
 
 ---
@@ -179,7 +183,7 @@ chmod 600 /www/listener/secret/hmac_secret
 ## 启动服务
 
 ```bash
-cd /www/listener/script
+cd {BASE_DIR}/script
 ./start.sh
 ```
 
