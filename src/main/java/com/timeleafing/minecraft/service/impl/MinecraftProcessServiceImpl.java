@@ -2,6 +2,7 @@ package com.timeleafing.minecraft.service.impl;
 
 import com.timeleafing.minecraft.common.constant.Pass;
 import com.timeleafing.minecraft.common.enumeration.ServerStatus;
+import com.timeleafing.minecraft.common.validation.annotation.RequireServerId;
 import com.timeleafing.minecraft.config.property.MinecraftProperties;
 import com.timeleafing.minecraft.exception.BizException;
 import com.timeleafing.minecraft.model.vo.MinecraftServer;
@@ -37,7 +38,7 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
     }
 
     @Override
-    public void sendCmd(String serverId, String cmd) throws IOException {
+    public void sendCmd(@RequireServerId String serverId, String cmd) throws IOException {
         var runtime = runtime(serverId);
         runtime.getLock().lock();
 
@@ -55,7 +56,7 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
     }
 
     @Override
-    public void startServer(String serverId) throws IOException {
+    public void startServer(@RequireServerId String serverId) throws IOException {
         var serverConfig = props.byId(serverId);
         var runtime = runtime(serverId);
 
@@ -100,7 +101,7 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
     }
 
     @Override
-    public void stopServer(String serverId) {
+    public void stopServer(@RequireServerId String serverId) {
         var runtime = runtime(serverId);
         runtime.getLock().lock();
 
@@ -116,19 +117,16 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
             } catch (IOException e) {
                 log.error("[{}] Error sending stop command", serverId, e);
             }
-
             boolean exited = false;
             try {
                 exited = runtime.getProcess().waitFor(STOP_WAIT_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-
             if (!exited) {
                 log.warn("[{}] stop timeout, destroying forcibly", serverId);
                 runtime.getProcess().destroyForcibly();
             }
-
             cleanup(serverId);
             LogWebSocket.broadcast(serverId, "[SERVER] stopped");
         } finally {
@@ -137,7 +135,7 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
     }
 
     @Override
-    public MinecraftServer getServer(String serverId) {
+    public MinecraftServer getServer(@RequireServerId String serverId) {
         return new MinecraftServer(serverId, getServerStatus(serverId));
     }
 
