@@ -1,4 +1,4 @@
-package com.timeleafing.minecraft.security;
+package com.timeleafing.minecraft.filter;
 
 import com.timeleafing.minecraft.config.property.SecurityProperties;
 import jakarta.servlet.FilterChain;

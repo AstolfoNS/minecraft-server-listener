@@ -1,4 +1,4 @@
-package com.timeleafing.minecraft.entity;
+package com.timeleafing.minecraft.model.dto;
 
 import lombok.Data;
 

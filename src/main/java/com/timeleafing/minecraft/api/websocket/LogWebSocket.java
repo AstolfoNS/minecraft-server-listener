@@ -1,4 +1,4 @@
-package com.timeleafing.minecraft.websocket;
+package com.timeleafing.minecraft.api.websocket;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.websocket.*;

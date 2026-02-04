@@ -1,6 +1,6 @@
 package com.timeleafing.minecraft.service;
 
-import com.timeleafing.minecraft.entity.MinecraftServer;
+import com.timeleafing.minecraft.model.vo.MinecraftServer;
 
 import java.io.IOException;
 import java.util.List;

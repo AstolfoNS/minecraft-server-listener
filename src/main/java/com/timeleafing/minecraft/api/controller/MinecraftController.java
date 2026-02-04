@@ -1,7 +1,7 @@
-package com.timeleafing.minecraft.controller;
+package com.timeleafing.minecraft.api.controller;
 
 import com.timeleafing.minecraft.common.response.R;
-import com.timeleafing.minecraft.entity.MinecraftServer;
+import com.timeleafing.minecraft.model.vo.MinecraftServer;
 import com.timeleafing.minecraft.service.MinecraftProcessService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
