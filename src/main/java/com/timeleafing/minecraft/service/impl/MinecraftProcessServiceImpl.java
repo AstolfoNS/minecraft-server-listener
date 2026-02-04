@@ -31,7 +31,6 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-
     private ServerRuntime runtime(String serverId) {
         return runtimes.computeIfAbsent(serverId, k -> new ServerRuntime());
     }
@@ -59,18 +58,18 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
     @Override
     public void sendCmd(String serverId, String cmd) throws IOException {
         var runtime = runtime(serverId);
-        runtime.getLock().lock();  // 精确控制锁的粒度
+        runtime.getLock().lock();
 
         try {
             if (!runtime.getRunning().get() || runtime.getWriter() == null) {
-                throw new IllegalStateException("server not running: " + serverId);
+                throw new IllegalStateException("Server not running: " + serverId);
             }
             runtime.getWriter().write(cmd);
             runtime.getWriter().newLine();
             runtime.getWriter().flush();
             log.info("[{}] -> {}", serverId, cmd);
         } finally {
-            runtime.getLock().unlock();  // 确保释放锁
+            runtime.getLock().unlock();
         }
     }
 
@@ -79,7 +78,8 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
         var serverConfig = props.byId(serverId);
         var runtime = runtime(serverId);
 
-        runtime.getLock().lock();  // 精确控制锁的粒度
+        runtime.getLock().lock();
+
         try {
             if (runtime.getRunning().get()) {
                 log.warn("[{}] already running", serverId);
@@ -88,34 +88,41 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
 
             log.info("[{}] Starting (workDir={}, script={})", serverId, serverConfig.getWorkDir(), serverConfig.getRunScript());
 
-            ProcessBuilder builder = new ProcessBuilder("bash", "-c", serverConfig.getRunScript());
-            builder.directory(new File(serverConfig.getWorkDir()));
-            builder.redirectErrorStream(true);
+            // 使用一个标志确保进程不被多次启动
+            synchronized (runtime) {
+                if (runtime.getRunning().get()) {
+                    return; // 防止多次启动
+                }
 
-            try {
-                Process process = builder.start();
-                runtime.setProcess(process);
-                runtime.setWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8)));
-                runtime.getRunning().set(true);
+                ProcessBuilder builder = new ProcessBuilder("bash", "-c", serverConfig.getRunScript());
+                builder.directory(new File(serverConfig.getWorkDir()));
+                builder.redirectErrorStream(true);
 
-                // 启动日志输出和进程监控线程
-                executorService.submit(() -> readProcessOutput(serverId)); // 日志输出读取线程
-                executorService.submit(() -> watchProcess(serverId)); // 进程监控线程
+                try {
+                    Process process = builder.start();
+                    runtime.setProcess(process);
+                    runtime.setWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8)));
+                    runtime.getRunning().set(true);
 
-                LogWebSocket.broadcast(serverId, "[SERVER] started");
-            } catch (IOException e) {
-                log.error("[{}] Failed to start server", serverId, e);
-                throw new IOException("Failed to start server", e);  // Rethrow with specific error message
+                    executorService.submit(() -> readProcessOutput(serverId));
+                    executorService.submit(() -> watchProcess(serverId));
+
+                    LogWebSocket.broadcast(serverId, "[SERVER] started");
+                } catch (IOException e) {
+                    log.error("[{}] Failed to start server", serverId, e);
+                    throw new IOException("Failed to start server", e);
+                }
             }
         } finally {
-            runtime.getLock().unlock();  // 确保释放锁
+            runtime.getLock().unlock();
         }
     }
 
     @Override
     public void stopServer(String serverId) {
         var runtime = runtime(serverId);
-        runtime.getLock().lock();  // 精确控制锁的粒度
+        runtime.getLock().lock();
+
         try {
             if (!runtime.getRunning().get()) {
                 log.info("[{}] not running", serverId);
@@ -135,14 +142,16 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
+
             if (!exited) {
                 log.warn("[{}] stop timeout, destroying forcibly", serverId);
                 runtime.getProcess().destroyForcibly();
             }
+
             cleanup(serverId);
             LogWebSocket.broadcast(serverId, "[SERVER] stopped");
         } finally {
-            runtime.getLock().unlock();  // 确保释放锁
+            runtime.getLock().unlock();
         }
     }
 
@@ -201,8 +210,6 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
 
     private void cleanup(String serverId) {
         var rt = runtime(serverId);
-
-        // 确保资源得以正确释放
         closeWriter(rt);
         destroyProcess(rt);
         interruptThreads(rt);

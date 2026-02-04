@@ -25,7 +25,9 @@ public class MinecraftProperties {
     }
 
     public ServerConfig byIndex(int index) {
-        if (index < 0 || index >= servers.size()) throw new IllegalArgumentException("bad index " + index);
+        if (index < 0 || index >= servers.size()) {
+            throw new IllegalArgumentException("bad index " + index);
+        }
         return servers.get(index);
     }
 
