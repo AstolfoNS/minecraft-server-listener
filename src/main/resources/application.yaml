@@ -14,5 +14,5 @@ security:
 minecraft:
   servers:
     - id: vanilla
-      work-dir: /www/minecraft/VanillaEra\:CulinaryJourney2.5.1–Server
+      work-dir: /www/minecraft/VanillaEra
       run-script: ./run.sh
