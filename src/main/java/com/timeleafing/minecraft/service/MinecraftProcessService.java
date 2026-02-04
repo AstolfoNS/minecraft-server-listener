@@ -7,14 +7,6 @@ import java.util.List;
 
 public interface MinecraftProcessService {
 
-    void sendCmd(int index, String cmd) throws IOException;
-
-    void startServer(int index) throws IOException;
-
-    void stopServer(int index);
-
-    MinecraftServer getServer(int index);
-
     void sendCmd(String serverId, String cmd) throws IOException;
 
     void startServer(String serverId) throws IOException;

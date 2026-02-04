@@ -36,26 +36,6 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
     }
 
     @Override
-    public void sendCmd(int index, String cmd) throws IOException {
-        sendCmd(props.byIndex(index).getId(), cmd);
-    }
-
-    @Override
-    public void startServer(int index) throws IOException {
-        startServer(props.byIndex(index).getId());
-    }
-
-    @Override
-    public void stopServer(int index) {
-        stopServer(props.byIndex(index).getId());
-    }
-
-    @Override
-    public MinecraftServer getServer(int index) {
-        return getServer(props.byIndex(index).getId());
-    }
-
-    @Override
     public void sendCmd(String serverId, String cmd) throws IOException {
         var runtime = runtime(serverId);
         runtime.getLock().lock();

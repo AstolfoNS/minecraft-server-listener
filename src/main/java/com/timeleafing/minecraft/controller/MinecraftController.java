@@ -21,29 +21,6 @@ public class MinecraftController {
     public record CmdReq(String cmd) {}
 
 
-    @PostMapping("/index/{index}/cmd")
-    public R<Void> cmdByIndex(@PathVariable int index, @RequestBody CmdReq req) throws IOException {
-        service.sendCmd(index, req.cmd());
-        return R.ok();
-    }
-
-    @PostMapping("/index/{index}/start")
-    public R<Void> startByIndex(@PathVariable int index) throws IOException {
-        service.startServer(index);
-        return R.ok();
-    }
-
-    @PostMapping("/index/{index}/stop")
-    public R<Void> stopByIndex(@PathVariable int index) {
-        service.stopServer(index);
-        return R.ok();
-    }
-
-    @GetMapping("/server/index/{index}")
-    public R<MinecraftServer> getServerByIndex(@PathVariable int index) {
-        return R.ok(service.getServer(index));
-    }
-
     @PostMapping("/{serverId}/cmd")
     public R<Void> cmd(@PathVariable String serverId, @RequestBody CmdReq req) throws IOException {
         service.sendCmd(serverId, req.cmd());
