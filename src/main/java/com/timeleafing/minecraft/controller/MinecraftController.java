@@ -1,58 +1,75 @@
 package com.timeleafing.minecraft.controller;
 
+import com.timeleafing.minecraft.common.response.R;
+import com.timeleafing.minecraft.entity.MinecraftServer;
 import com.timeleafing.minecraft.service.MinecraftProcessService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.List;
+
 @Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping
-@RequiredArgsConstructor
 public class MinecraftController {
 
-    private final MinecraftProcessService minecraftProcessService;
+    private final MinecraftProcessService service;
+
+    public record CmdReq(String cmd) {}
 
 
-    /** 启动服务器 */
-    @PostMapping("/start")
-    public String startServer() {
-        try {
-            minecraftProcessService.startServer();
-
-            return "Minecraft server started.";
-        } catch (Exception e) {
-            log.error("Failed to start Minecraft server", e);
-
-            return "Failed to start: %s".formatted(e.getMessage());
-        }
+    @PostMapping("/index/{index}/cmd")
+    public R<Void> cmdByIndex(@PathVariable int index, @RequestBody CmdReq req) throws IOException {
+        service.sendCmd(index, req.cmd());
+        return R.ok();
     }
 
-    /** 发送控制台命令 */
-    @PostMapping("/cmd")
-    public String sendCommand(@RequestParam String command) {
-        try {
-            minecraftProcessService.sendCommand(command);
-
-            return "Cmd sent: %s".formatted(command);
-        } catch (Exception e) {
-            log.error("Failed to send cmd", e);
-
-            return "Failed: %s".formatted(e.getMessage());
-        }
+    @PostMapping("/index/{index}/start")
+    public R<Void> startByIndex(@PathVariable int index) throws IOException {
+        service.startServer(index);
+        return R.ok();
     }
 
-    /** 停止服务器 */
-    @PostMapping("/stop")
-    public String stopServer() {
-        try {
-            minecraftProcessService.stopServer();
-
-            return "Minecraft server stopped.";
-        } catch (Exception e) {
-            log.error("Failed to stop Minecraft server", e);
-
-            return "Failed to stop: %s".formatted(e.getMessage());
-        }
+    @PostMapping("/index/{index}/stop")
+    public R<Void> stopByIndex(@PathVariable int index) {
+        service.stopServer(index);
+        return R.ok();
     }
+
+    @GetMapping("/server/index/{index}")
+    public R<MinecraftServer> getServerByIndex(@PathVariable int index) {
+        return R.ok(service.getServer(index));
+    }
+
+    @PostMapping("/{serverId}/cmd")
+    public R<Void> cmd(@PathVariable String serverId, @RequestBody CmdReq req) throws IOException {
+        service.sendCmd(serverId, req.cmd());
+        return R.ok();
+    }
+
+    @PostMapping("/{serverId}/start")
+    public R<Void> start(@PathVariable String serverId) throws IOException {
+        service.startServer(serverId);
+        return R.ok();
+    }
+
+    @PostMapping("/{serverId}/stop")
+    public R<Void> stop(@PathVariable String serverId) {
+        service.stopServer(serverId);
+        return R.ok();
+    }
+
+    @GetMapping("/server/{serverId}")
+    public R<MinecraftServer> getServer(@PathVariable String serverId) {
+        return R.ok(service.getServer(serverId));
+    }
+
+    @GetMapping("/servers")
+    public R<List<MinecraftServer>> listAllServer() {
+        return R.ok(service.listAllServer());
+    }
+
 }

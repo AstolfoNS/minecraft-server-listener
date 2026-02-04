@@ -4,11 +4,16 @@ set -euo pipefail
 BASE_DIR="/www/listener"
 PID_FILE="${BASE_DIR}/listener.pid"
 
-if [[ ! -f "${PID_FILE}" ]]; then
-  echo "No PID file found: ${PID_FILE}"
-  echo "Listener may not be running."
-  exit 0
-fi
+# 确保 PID 文件存在
+check_pid_file_exists() {
+  if [[ ! -f "${PID_FILE}" ]]; then
+    echo "No PID file found: ${PID_FILE}"
+    echo "Listener may not be running."
+    exit 0
+  fi
+}
+
+check_pid_file_exists
 
 PID="$(cat "${PID_FILE}" || true)"
 

@@ -10,22 +10,20 @@ LOG_DIR="${BASE_DIR}/logs"
 PID_FILE="${BASE_DIR}/listener.pid"
 SECRET_FILE="${BASE_DIR}/secret/hmac_secret"
 
+# 确保日志目录存在
 mkdir -p "${LOG_DIR}"
 
-if [[ ! -f "${JAR_FILE}" ]]; then
-  echo "ERROR: Jar not found: ${JAR_FILE}"
-  exit 1
-fi
+# 检查 Jar 和配置文件是否存在
+check_file_exists() {
+  if [[ ! -f "$1" ]]; then
+    echo "ERROR: $2 not found: $1"
+    exit 1
+  fi
+}
 
-if [[ ! -f "${CONFIG_FILE}" ]]; then
-  echo "ERROR: Config not found: ${CONFIG_FILE}"
-  exit 1
-fi
-
-if [[ ! -f "${SECRET_FILE}" ]]; then
-  echo "ERROR: Secret file not found: ${SECRET_FILE}"
-  exit 1
-fi
+check_file_exists "${JAR_FILE}" "Jar"
+check_file_exists "${CONFIG_FILE}" "Config"
+check_file_exists "${SECRET_FILE}" "Secret file"
 
 HMAC_SECRET="$(tr -d '\r\n' < "${SECRET_FILE}")"
 if [[ -z "${HMAC_SECRET}" ]]; then
@@ -34,7 +32,7 @@ if [[ -z "${HMAC_SECRET}" ]]; then
 fi
 export HMAC_SECRET
 
-# 已有进程在跑，直接退出
+# 检查是否有已运行的进程
 if [[ -f "${PID_FILE}" ]]; then
   OLD_PID="$(cat "${PID_FILE}" || true)"
   if [[ -n "${OLD_PID}" ]] && kill -0 "${OLD_PID}" 2>/dev/null; then
@@ -59,13 +57,14 @@ echo "  Log:        ${LOG_FILE}"
 JAVA_BIN="${JAVA_BIN:-java}"
 JAVA_OPTS="${JAVA_OPTS:--Xms128m -Xmx512m -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Shanghai}"
 
-nohup "${JAVA_BIN}" ${JAVA_OPTS} -jar "${JAR_FILE}" \
+nohup "${JAVA_BIN}" "${JAVA_OPTS}" -jar "${JAR_FILE}" \
   --spring.config.additional-location="file:${CONFIG_DIR}/" \
   > "${LOG_FILE}" 2>&1 &
 
 NEW_PID=$!
 echo "${NEW_PID}" > "${PID_FILE}"
 
+# 等待进程启动
 sleep 1
 if kill -0 "${NEW_PID}" 2>/dev/null; then
   echo "Started successfully (pid=${NEW_PID})"

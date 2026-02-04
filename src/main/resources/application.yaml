@@ -12,5 +12,7 @@ security:
   header-nonce: X-NONCE
   header-sign: X-SIGN
 minecraft:
-  work-dir: /www/minecraft/VanillaEra:CulinaryJourney2.5.1–Server
-  run-script: ./run.sh
+  servers:
+    - id: vanilla
+      work-dir: /www/minecraft/VanillaEra\:CulinaryJourney2.5.1–Server
+      run-script: ./run.sh

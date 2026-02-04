@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 @Data
 @Validated
 @ConfigurationProperties(prefix = "security")
-public class SecurityProperty {
+public class SecurityProperties {
     @NotBlank
     private String hmacSecret;
 

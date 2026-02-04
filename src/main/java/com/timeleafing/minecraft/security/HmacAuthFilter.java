@@ -1,6 +1,6 @@
 package com.timeleafing.minecraft.security;
 
-import com.timeleafing.minecraft.config.property.SecurityProperty;
+import com.timeleafing.minecraft.config.property.SecurityProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class HmacAuthFilter extends OncePerRequestFilter {
 
-    private final SecurityProperty props;
+    private final SecurityProperties props;
     // nonce 防重放（内存版）
     private final Map<String, Long> nonceCache = new ConcurrentHashMap<>();
 

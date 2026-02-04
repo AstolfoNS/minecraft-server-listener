@@ -2,66 +2,68 @@ package com.timeleafing.minecraft.websocket;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.websocket.*;
+import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.Closeable;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * WebSocket endpoint for log streaming.
- * - 使用 CopyOnWriteArraySet 管理 session（线程安全）
- * - 内部使用单线程广播器把消息异步发送给所有 open 的 session（使用 session.getAsyncRemote()）
- * - 内部队列限容量，队列满时丢弃最旧消息以保留新消息（防止内存爆炸）
- */
 @Slf4j
 @Component
-@ServerEndpoint("/ws/log")
+@ServerEndpoint("/ws/log/{serverId}")
 public class LogWebSocket implements Closeable {
 
-    private static final Set<Session> sessions = new CopyOnWriteArraySet<>();
+    /** 每个 serverId 对应一组 session */
+    private static final ConcurrentHashMap<String, CopyOnWriteArraySet<Session>> sessionsByServer = new ConcurrentHashMap<>();
+
+    /** 广播事件：携带 serverId，避免混流 */
+    private record WsEvent(String serverId, String message) {}
 
     private static final int QUEUE_CAPACITY = 10_000;
 
-    private static final BlockingQueue<String> broadcastQueue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+    // 使用 LinkedBlockingQueue 处理消息队列
+    private static final BlockingQueue<WsEvent> broadcastQueue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
 
-    private static final ExecutorService broadcaster = Executors.newSingleThreadExecutor(r -> {
+    // 使用线程池管理广播任务
+    private static final ExecutorService broadcaster = Executors.newFixedThreadPool(2, r -> {
         Thread t = new Thread(r, "ws-broadcaster");
         t.setDaemon(true);
         return t;
     });
 
-    // 控制广播线程生命周期
-    private static volatile boolean running = true;
+    private static final AtomicBoolean running = new AtomicBoolean(true);
 
     static {
         broadcaster.submit(() -> {
-            while (running || !broadcastQueue.isEmpty()) {
-                String msg;
+            while (running.get() || !broadcastQueue.isEmpty()) {
+                WsEvent ev;
                 try {
-                    msg = broadcastQueue.poll(500, TimeUnit.MILLISECONDS);
+                    ev = broadcastQueue.poll(500, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     continue;
                 }
-                if (msg == null) {
-                    continue;
-                }
+                if (ev == null) continue;
+
+                Set<Session> sessions = sessionsByServer.get(ev.serverId());
+                if (sessions == null || sessions.isEmpty()) continue;
+
+                // 批量发送消息
                 for (Session session : sessions) {
-                    sendMessageAsync(session, msg);
+                    sendMessageAsync(session, ev.message());
                 }
             }
             log.info("WebSocket broadcaster stopped.");
         });
     }
 
-    /** 负责向单个 Session 异步发送消息 */
     private static void sendMessageAsync(Session session, String msg) {
-        if (session == null || !session.isOpen()) {
-            return;
-        }
+        if (session == null || !session.isOpen()) return;
         try {
             session.getAsyncRemote().sendText(msg, r -> handleSendResult(session, r));
         } catch (Exception e) {
@@ -69,66 +71,78 @@ public class LogWebSocket implements Closeable {
         }
     }
 
-    /** 处理发送后的回调结果 */
     private static void handleSendResult(Session session, SendResult r) {
         if (r.isOK()) return;
-
         Throwable err = r.getException();
-        if (err != null) {
-            log.warn("Async send failed to {}: {}", session.getId(), err.getMessage());
-        } else {
-            log.warn("Async send failed to {}: unknown reason", session.getId());
-        }
+        if (err != null) log.warn("Async send failed to {}: {}", session.getId(), err.getMessage());
+        else log.warn("Async send failed to {}: unknown reason", session.getId());
     }
 
     @OnOpen
-    public void onOpen(Session session) {
-        sessions.add(session);
-        log.info("New WebSocket connection: {}", session.getId());
+    public void onOpen(Session session, @PathParam("serverId") String serverId) {
+        sessionsByServer.computeIfAbsent(serverId, k -> new CopyOnWriteArraySet<>()).add(session);
+        session.getUserProperties().put("serverId", serverId);
+        log.info("WS open: serverId={}, session={}", serverId, session.getId());
     }
 
     @OnClose
     public void onClose(Session session) {
-        sessions.remove(session);
-        log.info("WebSocket closed: {}", session.getId());
+        removeSession(session);
+        log.info("WS closed: {}", session.getId());
     }
 
     @OnError
     public void onError(Session session, Throwable throwable) {
         String id = session != null ? session.getId() : "unknown";
-        log.error("WebSocket error on session {}: {}", id, throwable.getMessage(), throwable);
+        log.error("WS error on session {}: {}", id, throwable.getMessage(), throwable);
+        if (session != null) removeSession(session);
     }
 
-    /**
-     * 将日志加入广播队列（非阻塞）。若队列已满，则丢弃最旧消息以保留新消息（防刷屏时优先保留最新日志）。
-     */
-    public static void broadcast(String message) {
-        if (!running) return;
+    private void removeSession(Session session) {
+        if (session == null) return;
+        String serverId = (String) session.getUserProperties().get("serverId");
+        if (serverId == null) return;
 
-        boolean offered = broadcastQueue.offer(message);
-        if (!offered) {
-            // 队列满：丢弃最旧的一条后再尝试插入（保留新消息）
-            String dropped = broadcastQueue.poll();
-            if (dropped != null) {
-                log.debug("Broadcast queue full, dropped oldest message.");
-            }
-            // 尝试再次插入（若仍失败则直接丢弃）
-            offered = broadcastQueue.offer(message);
-            if (!offered) {
-                log.warn("Broadcast queue full, message dropped.");
+        CopyOnWriteArraySet<Session> set = sessionsByServer.get(serverId);
+        if (set != null) {
+            set.remove(session);
+            if (set.isEmpty()) {
+                sessionsByServer.remove(serverId);
             }
         }
     }
 
     /**
-     * 优雅关闭广播线程和清理资源（在应用关闭时调用）
+     * 对外广播：按 serverId 广播
      */
+    public static void broadcast(String serverId, String message) {
+        if (!running.get()) return;
+
+        boolean offered = broadcastQueue.offer(new WsEvent(serverId, message));
+        if (!offered) {
+            // 队列满：丢弃最旧的消息后再尝试插入（保留新消息）
+            WsEvent dropped = broadcastQueue.poll();
+            if (dropped != null) log.debug("Broadcast queue full, dropped oldest message.");
+            offered = broadcastQueue.offer(new WsEvent(serverId, message));
+            if (!offered) log.warn("Broadcast queue full, message dropped.");
+        }
+    }
+
+    /**
+     * （可选）保留你原来的 broadcastAll(message) 作为兼容：直接发给所有 serverId 的订阅者
+     */
+    public static void broadcastAll(String message) {
+        for (Map.Entry<String, CopyOnWriteArraySet<Session>> e : sessionsByServer.entrySet()) {
+            broadcast(e.getKey(), message);
+        }
+    }
+
     @PreDestroy
     @Override
     public void close() {
-        running = false;
+        running.set(false);
+
         try {
-            // 等待队列处理完或超时
             broadcaster.shutdown();
             if (!broadcaster.awaitTermination(3, TimeUnit.SECONDS)) {
                 broadcaster.shutdownNow();
@@ -137,13 +151,18 @@ public class LogWebSocket implements Closeable {
             Thread.currentThread().interrupt();
             broadcaster.shutdownNow();
         }
-        // 关闭所有 open 会话
-        for (Session session : sessions) {
-            try {
-                if (session.isOpen()) session.close();
-            } catch (Exception ignored) { }
+
+        // 关闭所有会话
+        for (CopyOnWriteArraySet<Session> set : sessionsByServer.values()) {
+            for (Session session : set) {
+                try {
+                    if (session.isOpen()) session.close();
+                } catch (Exception ignored) {}
+            }
+            set.clear();
         }
-        sessions.clear();
+        sessionsByServer.clear();
+
         log.info("LogWebSocket shutdown complete.");
     }
 }
