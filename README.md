@@ -49,17 +49,19 @@
 
 ### HTTP API（需 HMAC 鉴权）
 
-| 接口                   | 方法 | 说明           |
-| ---------------------- | ---- | -------------- |
-| `/api/minecraft/start` | POST | 启动 MC 服务器 |
-| `/api/minecraft/stop`  | POST | 停止 MC 服务器 |
-| `/api/minecraft/cmd`   | POST | 发送控制台命令 |
+| 接口                               | 方法 | 说明                        |
+| ---------------------------------- | ---- | --------------------------- |
+| `/api/minecraft/{serverId}/start`  | POST | 启动指定的 Minecraft 服务器 |
+| `/api/minecraft/{serverId}/stop`   | POST | 停止指定的 Minecraft 服务器 |
+| `/api/minecraft/{serverId}/cmd`    | POST | 向指定服务器发送控制台命令  |
+| `/api/minecraft/{serverId}/status` | GET  | 获取指定服务器的当前状态    |
+| `/api/minecraft/servers`           | GET  | 获取所有服务器的状态列表    |
 
 ### WebSocket（无需鉴权）
 
-| 地址                    | 说明             |
-| ----------------------- | ---------------- |
-| `/api/minecraft/ws/log` | 实时推送 MC 日志 |
+| 地址                               | 说明                     |
+| ---------------------------------- | ------------------------ |
+| `/api/minecraft/ws/log/{serverId}` | 实时推送指定服务器的日志 |
 
 ---
 
@@ -90,7 +92,7 @@ METHOD \n PATH \n TIMESTAMP \n NONCE
 
 ## 项目结构
 
-### Java 包结构
+### Java 包核心结构
 
 ```dir
 com.timeleafing.minecraft
@@ -144,7 +146,7 @@ security:
   header-nonce: X-NONCE
   header-sign: X-SIGN
 minecraft:
-  work-dir: /www/minecraft/VanillaEra:CulinaryJourney2.5.1–Server
+  work-dir: /www/minecraft/VanillaEra
   run-script: ./run.sh
 ```
 
@@ -204,7 +206,7 @@ cd /www/listener/script
 
 ```head
 METHOD = POST
-PATH   = /api/minecraft/start
+PATH   = /api/minecraft/{serverId}/start
 TS     = 当前秒级时间戳
 NONCE  = 随机字符串
 ```
@@ -213,7 +215,7 @@ Canonical String：
 
 ```api
 POST
-/api/minecraft/start
+/api/minecraft/{serverId}/start
 1700000000
 abcdef123456
 ```
@@ -235,7 +237,7 @@ abcdef123456
 ## WebSocket 连接示例
 
 ```bash
-ws://<server-ip>:8081/api/minecraft/ws/log
+ws://<server-ip>:8081/api/minecraft/ws/log/{serverId}
 ```
 
 说明：
