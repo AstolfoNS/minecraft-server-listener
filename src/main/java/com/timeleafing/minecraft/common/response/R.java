@@ -16,10 +16,12 @@ public class R<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private Integer code;
+    private int code;
 
     private String message;
+
     private T data;
+
     private Object details;
 
     // ==========================
