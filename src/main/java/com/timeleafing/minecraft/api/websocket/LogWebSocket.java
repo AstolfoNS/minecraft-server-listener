@@ -38,6 +38,7 @@ public class LogWebSocket implements Closeable {
 
     private static final AtomicBoolean running = new AtomicBoolean(true);
 
+
     static {
         broadcaster.submit(() -> {
             while (running.get() || !broadcastQueue.isEmpty()) {
@@ -144,7 +145,7 @@ public class LogWebSocket implements Closeable {
     }
 
     /**
-     * （可选）保留你原来的 broadcastAll(message) 作为兼容：直接发给所有 serverId 的订阅者
+     * 直接发给所有 serverId 的订阅者
      */
     public static void broadcastAll(String message) {
         for (Map.Entry<String, CopyOnWriteArraySet<Session>> e : sessionsByServer.entrySet()) {
