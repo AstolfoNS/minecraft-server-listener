@@ -154,6 +154,9 @@ minecraft:
     - id: vanilla
       work-dir: /www/minecraft/servers/VanillaEra
       run-script: ./run.sh
+    - id: xxx
+      work-dir: /www/minecraft/servers/xxx
+      run-script: ./run.sh
 ```
 
 ---
