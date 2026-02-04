@@ -48,10 +48,13 @@ public class LogWebSocket implements Closeable {
                     Thread.currentThread().interrupt();
                     continue;
                 }
-                if (ev == null) continue;
-
+                if (ev == null) {
+                    continue;
+                }
                 Set<Session> sessions = sessionsByServer.get(ev.serverId());
-                if (sessions == null || sessions.isEmpty()) continue;
+                if (sessions == null || sessions.isEmpty()) {
+                    continue;
+                }
 
                 // 批量发送消息
                 for (Session session : sessions) {
@@ -63,7 +66,9 @@ public class LogWebSocket implements Closeable {
     }
 
     private static void sendMessageAsync(Session session, String msg) {
-        if (session == null || !session.isOpen()) return;
+        if (session == null || !session.isOpen()) {
+            return;
+        }
         try {
             session.getAsyncRemote().sendText(msg, r -> handleSendResult(session, r));
         } catch (Exception e) {
@@ -72,10 +77,15 @@ public class LogWebSocket implements Closeable {
     }
 
     private static void handleSendResult(Session session, SendResult r) {
-        if (r.isOK()) return;
+        if (r.isOK()) {
+            return;
+        }
         Throwable err = r.getException();
-        if (err != null) log.warn("Async send failed to {}: {}", session.getId(), err.getMessage());
-        else log.warn("Async send failed to {}: unknown reason", session.getId());
+        if (err != null) {
+            log.warn("Async send failed to {}: {}", session.getId(), err.getMessage());
+        } else {
+            log.warn("Async send failed to {}: unknown reason", session.getId());
+        }
     }
 
     @OnOpen
@@ -95,14 +105,19 @@ public class LogWebSocket implements Closeable {
     public void onError(Session session, Throwable throwable) {
         String id = session != null ? session.getId() : "unknown";
         log.error("WS error on session {}: {}", id, throwable.getMessage(), throwable);
-        if (session != null) removeSession(session);
+        if (session != null) {
+            removeSession(session);
+        }
     }
 
     private void removeSession(Session session) {
-        if (session == null) return;
+        if (session == null) {
+            return;
+        }
         String serverId = (String) session.getUserProperties().get("serverId");
-        if (serverId == null) return;
-
+        if (serverId == null) {
+            return;
+        }
         CopyOnWriteArraySet<Session> set = sessionsByServer.get(serverId);
         if (set != null) {
             set.remove(session);
