@@ -3,6 +3,7 @@ package com.timeleafing.minecraft.service.impl;
 import com.timeleafing.minecraft.common.constant.Pass;
 import com.timeleafing.minecraft.common.enumeration.ServerStatus;
 import com.timeleafing.minecraft.config.property.MinecraftProperties;
+import com.timeleafing.minecraft.exception.BizException;
 import com.timeleafing.minecraft.model.vo.MinecraftServer;
 import com.timeleafing.minecraft.model.dto.ServerRuntime;
 import com.timeleafing.minecraft.service.MinecraftProcessService;
@@ -42,7 +43,7 @@ public class MinecraftProcessServiceImpl implements MinecraftProcessService {
 
         try {
             if (!runtime.getRunning().get() || runtime.getWriter() == null) {
-                throw new IllegalStateException("Server not running: " + serverId);
+                throw new BizException("Server not running: " + serverId);
             }
             runtime.getWriter().write(cmd);
             runtime.getWriter().newLine();
