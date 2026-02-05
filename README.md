@@ -56,7 +56,7 @@
 | `/api/minecraft/{serverId}/cmd`    | POST | 向指定服务器发送控制台命令  |
 | `/api/minecraft/server/{serverId}` | GET  | 获取指定服务器的当前状态    |
 | `/api/minecraft/servers`           | GET  | 获取所有服务器的状态列表    |
-| `/api/minecraft/ws/log/online`     | GET  | 查看websocket连接数量       |
+| `/api/minecraft/ws/online`         | GET  | 查看websocket连接数量       |
 
 ### WebSocket（无需鉴权）
 
