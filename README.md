@@ -128,7 +128,7 @@ com.timeleafing.minecraft
         ├── server/
         │   ├── config/
         │   │   └── application.yaml
-        │   └── minecraft-0.0.1-SNAPSHOT.jar
+        │   └── minecraft-0.0.1-SNAPSHOT.jar # minecraft-server-listener jar 包
         └── listener.pid
 ```
 
