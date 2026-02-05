@@ -54,7 +54,7 @@
 | `/api/minecraft/{serverId}/start`  | POST | 启动指定的 Minecraft 服务器 |
 | `/api/minecraft/{serverId}/stop`   | POST | 停止指定的 Minecraft 服务器 |
 | `/api/minecraft/{serverId}/cmd`    | POST | 向指定服务器发送控制台命令  |
-| `/api/minecraft/{serverId}/status` | GET  | 获取指定服务器的当前状态    |
+| `/api/minecraft/server/{serverId}` | GET  | 获取指定服务器的当前状态    |
 | `/api/minecraft/servers`           | GET  | 获取所有服务器的状态列表    |
 | `/api/minecraft/ws/log/online`     | GET  | 查看websocket连接数量       |
 
