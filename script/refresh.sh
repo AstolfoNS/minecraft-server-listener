@@ -3,11 +3,12 @@
 BASE_DIR="/www/minecraft/listener"
 YAML_FILE="${BASE_DIR}/server/config/application.yaml"
 
-PORT=$(yq '.server.port // 8080' $YAML_FILE)
-CONTEXT_PATH=$(yq '.server.servlet.context-path // ""' $YAML_FILE)
+# 使用 Python 提取变量
+S_PORT=$(python3 -c "import yaml; print(yaml.safe_load(open('$YAML_FILE'))['server']['port'])" 2>/dev/null || echo 8081)
+C_PATH=$(python3 -c "import yaml; print(yaml.safe_load(open('$YAML_FILE'))['server']['servlet']['context-path'])" 2>/dev/null || echo "")
 
-REFRESH_URL="http://localhost:${PORT}${CONTEXT_PATH}/actuator/refresh"
+URL="http://localhost:${S_PORT}${C_PATH}/actuator/refresh"
 
-echo "从配置文件读取到端口: $PORT"
-echo "正在刷新: $REFRESH_URL"
-curl -X POST "$REFRESH_URL"
+echo "Using Python to parse YAML..."
+echo "Target URL: $URL"
+curl -X POST "$URL"
