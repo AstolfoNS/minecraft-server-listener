@@ -11,6 +11,11 @@ security:
   header-ts: X-TS
   header-nonce: X-NONCE
   header-sign: X-SIGN
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'refresh'
 minecraft:
   servers:
     - id: vanilla

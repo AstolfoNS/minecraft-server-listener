@@ -2,6 +2,7 @@ package com.timeleafing.minecraft.config.property;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Objects;
 
 @Data
 @Validated
+@RefreshScope
 @ConfigurationProperties(prefix = "minecraft")
 public class MinecraftProperties {
 
